@@ -1,5 +1,6 @@
 flask
 transformers==transformers==4.30.2
-torch==2.2.2
+torch==2.0.1
 Pillow
 pytesseract
+numpy<2
