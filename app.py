@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from transformers import LayoutLMv2Processor, LayoutLMv2ForQuestionAnswering
+from transformers import LayoutLMProcessor, LayoutLMForQuestionAnswering
 from PIL import Image
 import pytesseract
 import torch
@@ -7,13 +7,13 @@ import os
 
 app = Flask(__name__)
 
-model_name = "microsoft/layoutlmv2-base-uncased"
-processor = LayoutLMv2Processor.from_pretrained(model_name)
-model = LayoutLMv2ForQuestionAnswering.from_pretrained(model_name)
+model_name = "microsoft/layoutlm-base-uncased"
+processor = LayoutLMProcessor.from_pretrained(model_name)
+model = LayoutLMForQuestionAnswering.from_pretrained(model_name)
 
 @app.route('/')
 def index():
-    return "LayoutLMv2 OCR QA service is running!"
+    return "LayoutLM OCR QA service is running!"
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -46,7 +46,6 @@ def predict():
     attention_mask = encoding["attention_mask"]
     bbox = encoding["bbox"]
     token_type_ids = encoding["token_type_ids"]
-    image_tensor = encoding["image"]
 
     question_encoding = processor.tokenizer(question, truncation=True, padding="max_length", return_tensors="pt")
     input_ids[:, :question_encoding["input_ids"].size(1)] = question_encoding["input_ids"]
@@ -56,8 +55,7 @@ def predict():
         outputs = model(input_ids=input_ids,
                         bbox=bbox,
                         attention_mask=attention_mask,
-                        token_type_ids=token_type_ids,
-                        image=image_tensor)
+                        token_type_ids=token_type_ids)
 
     start_logits = outputs.start_logits
     end_logits = outputs.end_logits
