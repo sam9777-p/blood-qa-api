@@ -3,3 +3,8 @@ services:
     name: blood-qa-api
     env: docker
     plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: PORT
+        value: 5000
