@@ -1,5 +1,5 @@
 flask
-transformers==4.39.3
+transformers==transformers==4.30.2
 torch==2.2.2
 Pillow
 pytesseract
