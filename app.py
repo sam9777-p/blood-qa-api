@@ -11,6 +11,10 @@ model_name = "microsoft/layoutlmv2-base-uncased"
 processor = LayoutLMv2Processor.from_pretrained(model_name)
 model = LayoutLMv2ForQuestionAnswering.from_pretrained(model_name)
 
+@app.route('/')
+def index():
+    return "LayoutLMv2 OCR QA service is running!"
+
 @app.route('/predict', methods=['POST'])
 def predict():
     if 'file' not in request.files:
@@ -37,7 +41,7 @@ def predict():
     if not words:
         return jsonify({"error": "No readable text found"}), 400
 
-    encoding = processor(image, words, boxes=boxes, word_labels=None, return_tensors="pt", truncation=True, padding="max_length")
+    encoding = processor(image, words, boxes=boxes, return_tensors="pt", truncation=True, padding="max_length")
     input_ids = encoding["input_ids"]
     attention_mask = encoding["attention_mask"]
     bbox = encoding["bbox"]
@@ -45,8 +49,8 @@ def predict():
     image_tensor = encoding["image"]
 
     question_encoding = processor.tokenizer(question, truncation=True, padding="max_length", return_tensors="pt")
-    encoding["input_ids"] = question_encoding["input_ids"]
-    encoding["attention_mask"] = question_encoding["attention_mask"]
+    input_ids[:, :question_encoding["input_ids"].size(1)] = question_encoding["input_ids"]
+    attention_mask[:, :question_encoding["attention_mask"].size(1)] = question_encoding["attention_mask"]
 
     with torch.no_grad():
         outputs = model(input_ids=input_ids,
@@ -70,4 +74,4 @@ def predict():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host='0.0.0.0', port=port)
