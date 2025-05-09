@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from transformers import LayoutLMTokenizer, LayoutLMForQuestionAnswering
+from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 from PIL import Image
 import pytesseract
 import torch
@@ -8,8 +8,8 @@ import os
 app = Flask(__name__)
 
 model_name = "impira/layoutlm-document-qa"
-tokenizer = LayoutLMTokenizer.from_pretrained(model_name)
-model = LayoutLMForQuestionAnswering.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForQuestionAnswering.from_pretrained(model_name)
 
 @app.route('/')
 def index():
