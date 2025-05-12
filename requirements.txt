@@ -1,6 +1,5 @@
 flask
-transformers==4.30.2
-torch==2.0.1
-Pillow
-pytesseract
-numpy<2
+lightgbm
+pandas
+scikit-learn
+gunicorn
