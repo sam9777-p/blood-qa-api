@@ -1,38 +1,33 @@
 from flask import Flask, request, jsonify
-import lightgbm as lgb
-import pandas as pd
+import numpy as np
 
 app = Flask(__name__)
 
-# Load the model
-model = lgb.Booster(model_file="eligibility_model.txt")
+BMI_data = [18.5, 22.0, 24.0, 28.0, 30.0]
+blood_volume_data = [450, 500, 520, 560, 590]
 
-# Define feature columns (must match training data)
-FEATURE_COLUMNS = [
-    "Age", "HemoglobinLevel", "Weight", "BloodPressureSys",
-    "BloodPressureDia", "PulseRate", "PreviousDonationInterval",
-    "HasChronicIllness", "IsSmoker"
-]
+def predict_blood_volume(bmi_input):
+    x = np.array(BMI_data)
+    y = np.array(blood_volume_data)
+    n = len(x)
+    sum_x, sum_y = x.sum(), y.sum()
+    sum_x2, sum_xy = (x ** 2).sum(), (x * y).sum()
+    m = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x ** 2)
+    b = (sum_y - m * sum_x) / n
+    return round(m * bmi_input + b, 2)
+
+@app.route("/")
+def index():
+    return "Blood Donation Eligibility Linear Regression API is running."
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    data = request.get_json()
-
-    try:
-        # Convert JSON to DataFrame
-        df = pd.DataFrame([data], columns=FEATURE_COLUMNS)
-
-        # Predict
-        pred_prob = model.predict(df)[0]
-        pred = int(pred_prob > 0.5)
-
-        return jsonify({
-            "eligible": bool(pred),
-            "confidence": round(pred_prob, 4)
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
+    data = request.json
+    bmi = data.get("bmi")
+    if bmi is None:
+        return jsonify({"error": "Please provide a BMI value."}), 400
+    prediction = predict_blood_volume(float(bmi))
+    return jsonify({"bmi": bmi, "predicted_blood_volume": prediction})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
