@@ -1,5 +1,2 @@
 flask
-lightgbm
-pandas
-scikit-learn
-gunicorn
+numpy
