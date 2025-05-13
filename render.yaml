@@ -1,10 +1,5 @@
 services:
   - type: web
-    name: blood-qa-api
+    name: blood-donation-eligibility-api
     env: docker
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
-    envVars:
-      - key: PORT
-        value: 5000
